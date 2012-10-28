@@ -76,13 +76,15 @@ def test_langpop_hierarchical_clusters():
     clusters = find_clusters([Item(lang, n) for lang, n in LANGUAGES_POPULARITY],
                              ('Ubiquitous', 'Very Popular', 'Popular', 'Niche'))
     
-    for cluster in clusters:
-        print cluster
-    
     for cluster, (expected_label, expected_list) in zip(clusters, EXPECTED_CLUSTERS):
         assert cluster.name == expected_label
         
         cluster.items.sort(reverse=True)
-        print [item.name for item in cluster.items]
-        print expected_list
         assert [item.name for item in cluster.items] == expected_list
+
+
+if __name__ == '__main__':
+    test_3D_hierarchical_clusters()
+    test_langpop_hierarchical_clusters()
+
+

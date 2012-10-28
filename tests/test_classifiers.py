@@ -79,3 +79,13 @@ def test_NaiveBayesClassifier_without_smoothing_2():
     model = Model(simple_tokenizer(TITLE_DATA), k=0)
     classifier = Classifier(model)
     verify(classifier.get_normalised_probabilities(["perfect", "storm"])["movie"], 0.0)
+
+
+
+
+if __name__ == '__main__':
+    test_NaiveBayesClassifier_without_smoothing()
+    test_NaiveBayesClassifier_with_smoothing()
+    
+    test_NaiveBayesClassifier_with_smoothing_2()
+    test_NaiveBayesClassifier_without_smoothing_2()

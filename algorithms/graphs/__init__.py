@@ -3,26 +3,6 @@ from copy import deepcopy
 from heapq import heappush, heappop
 
 
-class Path:
-    def __init__(self, start):
-        self.nodes = [start]
-        self.cost = 0
-        self.length = 0
-    
-    def add(self, step):
-        node, cost = step
-        self.nodes.append(node)
-        self.cost += cost
-        self.length += 1
-    
-    @property
-    def end(self):
-        return self.nodes[-1]
-    
-    def __str__(self):
-        return ' -> '.join(self.nodes)  + " (cost:%d, length:%d)" % (self.cost, self.length)
-
-
 class Graph:
     def __init__(self, edges=None):
         self.node_edges = defaultdict(dict)
@@ -53,11 +33,32 @@ class Graph:
         return self.node_edges[node].items()
 
 
-class GraphSearch:
-    def __init__(self, graph,  heuristic=None):
-        self.graph = graph
-        self.heuristic = heuristic
+class Path:
+    def __init__(self, start):
+        self.nodes = [start]
+        self.cost = 0
+        
+        # processing cost to find this solution
+        self.iterations = 0
     
+    def add(self, step):
+        node, cost = step
+        self.nodes.append(node)
+        self.cost += cost
+    
+    @property
+    def end(self):
+        return self.nodes[-1]
+    
+    @property
+    def length(self):
+        return len(self.nodes)
+    
+    def __str__(self):
+        return ' -> '.join(self.nodes)  + " (cost:%d, length:%d)" % (self.cost, self.length)
+
+
+class GraphSearcher:
     def _add_frontier(self, path):
         self.frontier[path.end] = path
         self._add_path(path)
@@ -69,18 +70,20 @@ class GraphSearch:
         pass
     
     def _get_path(self):
-        raise Exception("GraphSearch is an abstract class, use one of its implementations instead")
+        raise Exception("GraphSearcher is an abstract class, use one of its implementations instead")
     
-    def search(self, start, goal, debug=False):
+    def search(self, graph, start, goal, heuristic=None, debug=False):
+        self.goal = goal
+        self.heuristic = heuristic
+        
         self.paths = []
         self.frontier = {}
-        self.goal = goal
         self._add_frontier(Path(start))
         
         explored = set([])
-        self.iterations = 0
+        iterations = 0
         while True:
-            self.iterations += 1
+            iterations += 1
             path = self._get_path()
             if path is None: return None
             if debug: print path
@@ -89,9 +92,10 @@ class GraphSearch:
             explored.add(s)
             del self.frontier[s]
             if s == goal:
+                path.iterations = iterations
                 return path
             
-            for edge in self.graph.edges(s):
+            for edge in graph.edges(s):
                 new_node = edge[0]
                 if new_node in explored: continue
                 
@@ -104,22 +108,22 @@ class GraphSearch:
                     self._add_frontier(new_path)
 
 
-class BreadthFirstSearch(GraphSearch):
+class BreadthFirstSearcher(GraphSearcher):
     def _get_path(self):
         return self.paths.pop(0)
 
 
-class DepthFirstSearch(GraphSearch):
+class DepthFirstSearcher(GraphSearcher):
     def _get_path(self):
         return self.paths.pop()
 
 
-class UniformCostSearch(GraphSearch):
+class UniformCostSearcher(GraphSearcher):
     def _add_path(self, path):
         heappush(self.paths, (self._path_cost(path), path))
     
     def _get_path(self):
-        return heappop(self.paths)[1]
+        return heappop(self.paths)[1] # (0:cost, 1:path)
     
     def _path_cost(self, path):
         return path.cost
@@ -130,7 +134,23 @@ class UniformCostSearch(GraphSearch):
             self._add_frontier(new_path)
 
 
-class AStarSearch(UniformCostSearch):
+class AStarSearcher(UniformCostSearcher):
     def _path_cost(self, path):
         return path.cost + self.heuristic(path.end, self.goal)
+
+
+def breadth_first_search(graph, start, end):
+    return BreadthFirstSearcher().search(graph, start, end)
+
+
+def depth_first_search(graph, start, end):
+    return DepthFirstSearcher().search(graph, start, end)
+
+
+def uniform_cost_search(graph, start, end):
+    return UniformCostSearcher().search(graph, start, end)
+
+
+def a_star_search(graph, start, end, heuristic):
+    return AStarSearcher().search(graph, start, end, heuristic)
 
