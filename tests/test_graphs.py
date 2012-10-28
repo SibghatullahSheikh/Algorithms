@@ -1,3 +1,5 @@
+# Examples taken from the course "Introduction to Artificial Intelligence", Sebastian Thrun and Peter Norvig:
+#    https://www.ai-class.com
 from algorithms.graphs import Graph, breadth_first_search, depth_first_search, uniform_cost_search, a_star_search
 
 ROMANIA_GRAPH = Graph([

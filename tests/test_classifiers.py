@@ -1,10 +1,11 @@
+# Examples taken from the course "Introduction to Artificial Intelligence", Sebastian Thrun and Peter Norvig:
+#    https://www.ai-class.com
 from nose.tools import assert_almost_equal
 def verify(value, expected):
     assert_almost_equal(value, expected, places=4)
 
 
 from algorithms.classifiers.naive_bayes import Model, Classifier
-
 
 SPAM_DATA = (
     ("spam", (
